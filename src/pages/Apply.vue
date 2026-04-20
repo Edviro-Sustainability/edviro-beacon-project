@@ -1,9 +1,13 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue'
+import { computed, reactive, ref, useTemplateRef } from 'vue'
 import SiteNav from '../components/beacon/SiteNav.vue'
 import SiteFooter from '../components/beacon/SiteFooter.vue'
 
 const FORM_NAME = 'beacon-application'
+const ESSAY_LIMIT = 1800
+const RESUME_MAX_BYTES = 8 * 1024 * 1024 // Netlify Forms file upload limit
+
+type Track = '' | 'data' | 'policy'
 
 interface FormState {
   full_name: string
@@ -11,10 +15,9 @@ interface FormState {
   school: string
   grade: string
   location: string
-  track: '' | 'data' | 'policy'
+  track: Track
   why_essay: string
-  change_essay: string
-  resume_url: string
+  track_essay: string
   'bot-field': string
 }
 
@@ -26,31 +29,94 @@ const initialForm = (): FormState => ({
   location: '',
   track: '',
   why_essay: '',
-  change_essay: '',
-  resume_url: '',
+  track_essay: '',
   'bot-field': '',
 })
 
 const form = reactive<FormState>(initialForm())
+const resumeFile = ref<File | null>(null)
+const resumeInput = useTemplateRef<HTMLInputElement>('resumeInput')
 const fieldErrors = reactive<Record<string, string>>({})
 const submitting = ref(false)
 const submitted = ref(false)
 const generalError = ref<string | null>(null)
 
-const ESSAY_LIMIT = 1800
 const whyCount = computed(() => form.why_essay.length)
-const changeCount = computed(() => form.change_essay.length)
+const trackEssayCount = computed(() => form.track_essay.length)
+
+const TRACK_ESSAY_PROMPTS: Record<Exclude<Track, ''>, {
+  label: string
+  placeholder: string
+}> = {
+  data: {
+    label: 'Tell us about your CS or data background.',
+    placeholder:
+      "Courses, side projects, hackathons, anything you've built with code or data \u2014 even small stuff. If you're brand new to it, say that, and tell us how you'd ramp up.",
+  },
+  policy: {
+    label: 'What environmental issue are you most fired up about, and why?',
+    placeholder:
+      "It can be hyper-local (a leaky boiler in your school) or huge (utility-scale renewables). What is it, and what made it personal for you?",
+  },
+}
+
+const trackEssayPrompt = computed(() =>
+  form.track ? TRACK_ESSAY_PROMPTS[form.track] : null,
+)
 
 const FIELD_MESSAGES: Record<string, string> = {
   required: 'This field is required.',
   invalid_email: 'Please enter a valid email address.',
-  must_start_with_http: 'URL must begin with http:// or https://',
+  resume_too_large: 'Resume must be 8 MB or smaller.',
+  resume_bad_type: 'Resume must be a PDF or Word document.',
 }
 
-function fieldError(name: keyof FormState): string | null {
+function fieldError(name: string): string | null {
   const code = fieldErrors[name]
   if (!code) return null
   return FIELD_MESSAGES[code] ?? 'Invalid value.'
+}
+
+const ALLOWED_RESUME_TYPES = new Set([
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+])
+
+function onResumeChange(e: Event) {
+  delete fieldErrors.resume
+  const target = e.target as HTMLInputElement
+  const file = target.files?.[0] ?? null
+  if (!file) {
+    resumeFile.value = null
+    return
+  }
+  if (file.size > RESUME_MAX_BYTES) {
+    fieldErrors.resume = 'resume_too_large'
+    target.value = ''
+    resumeFile.value = null
+    return
+  }
+  const okByExt = /\.(pdf|docx?|)$/i.test(file.name)
+  if (!ALLOWED_RESUME_TYPES.has(file.type) && !okByExt) {
+    fieldErrors.resume = 'resume_bad_type'
+    target.value = ''
+    resumeFile.value = null
+    return
+  }
+  resumeFile.value = file
+}
+
+function clearResume() {
+  resumeFile.value = null
+  if (resumeInput.value) resumeInput.value.value = ''
+  delete fieldErrors.resume
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
 async function onSubmit() {
@@ -68,9 +134,7 @@ async function onSubmit() {
   if (!form.location.trim()) localErrors.location = 'required'
   if (!form.track) localErrors.track = 'required'
   if (!form.why_essay.trim()) localErrors.why_essay = 'required'
-  if (!form.change_essay.trim()) localErrors.change_essay = 'required'
-  if (form.resume_url.trim() && !/^https?:\/\//i.test(form.resume_url.trim()))
-    localErrors.resume_url = 'must_start_with_http'
+  if (!form.track_essay.trim()) localErrors.track_essay = 'required'
 
   if (Object.keys(localErrors).length > 0) {
     Object.assign(fieldErrors, localErrors)
@@ -78,29 +142,26 @@ async function onSubmit() {
     return
   }
 
-  const body = new URLSearchParams()
-  body.append('form-name', FORM_NAME)
-  body.append('bot-field', form['bot-field'])
-  body.append('full_name', form.full_name.trim())
-  body.append('email', form.email.trim())
-  body.append('school', form.school.trim())
-  body.append('grade', form.grade.trim())
-  body.append('location', form.location.trim())
-  body.append('track', form.track)
-  body.append('why_essay', form.why_essay.trim())
-  body.append('change_essay', form.change_essay.trim())
-  body.append('resume_url', form.resume_url.trim())
+  const fd = new FormData()
+  fd.append('form-name', FORM_NAME)
+  fd.append('bot-field', form['bot-field'])
+  fd.append('full_name', form.full_name.trim())
+  fd.append('email', form.email.trim())
+  fd.append('school', form.school.trim())
+  fd.append('grade', form.grade.trim())
+  fd.append('location', form.location.trim())
+  fd.append('track', form.track)
+  fd.append('why_essay', form.why_essay.trim())
+  fd.append('track_essay', form.track_essay.trim())
+  if (resumeFile.value) fd.append('resume', resumeFile.value, resumeFile.value.name)
 
   submitting.value = true
   try {
-    const res = await fetch('/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: body.toString(),
-    })
+    const res = await fetch('/', { method: 'POST', body: fd })
     if (!res.ok) throw new Error(`http_${res.status}`)
     submitted.value = true
     Object.assign(form, initialForm())
+    clearResume()
   } catch {
     generalError.value =
       'Something went wrong submitting your application. Please try again, or email hursh@edviroenergy.com.'
@@ -156,6 +217,7 @@ function applyAgain() {
         class="apply__form"
         name="beacon-application"
         method="POST"
+        enctype="multipart/form-data"
         data-netlify="true"
         netlify-honeypot="bot-field"
         novalidate
@@ -287,38 +349,65 @@ function applyAgain() {
             <span v-if="fieldError('why_essay')" class="field__err">{{ fieldError('why_essay') }}</span>
           </label>
 
-          <label class="field" :class="{ 'field--err': fieldErrors.change_essay }">
+          <div v-if="!form.track" class="apply__track-essay-locked">
+            Pick a track above to unlock the second question &mdash; it's tailored to whichever
+            track you choose.
+          </div>
+
+          <label
+            v-else
+            class="field"
+            :class="{ 'field--err': fieldErrors.track_essay }"
+          >
             <span class="field__label">
-              A sustainability change you'd push for at your school
-              <span class="field__count" :class="{ 'field__count--over': changeCount > ESSAY_LIMIT }">
-                {{ changeCount }} / {{ ESSAY_LIMIT }}
+              {{ trackEssayPrompt!.label }}
+              <span class="field__count" :class="{ 'field__count--over': trackEssayCount > ESSAY_LIMIT }">
+                {{ trackEssayCount }} / {{ ESSAY_LIMIT }}
               </span>
             </span>
             <textarea
-              v-model="form.change_essay"
+              v-model="form.track_essay"
               rows="6"
               :maxlength="ESSAY_LIMIT + 200"
-              placeholder="Be concrete. What is it, who would you have to convince, and how would you measure that it worked?"
+              :placeholder="trackEssayPrompt!.placeholder"
               required
             ></textarea>
-            <span v-if="fieldError('change_essay')" class="field__err">{{ fieldError('change_essay') }}</span>
+            <span v-if="fieldError('track_essay')" class="field__err">{{ fieldError('track_essay') }}</span>
           </label>
         </div>
 
         <div class="apply__group">
-          <h2 class="apply__group-title">Optional</h2>
-          <label class="field" :class="{ 'field--err': fieldErrors.resume_url }">
-            <span class="field__label">
-              Resume or portfolio URL
-              <span class="field__hint">Google Drive, Notion, personal site &mdash; whatever you'd share.</span>
-            </span>
+          <h2 class="apply__group-title">Resume</h2>
+          <p class="apply__group-help">Optional. PDF or Word doc, up to 8&nbsp;MB.</p>
+          <div class="field" :class="{ 'field--err': fieldErrors.resume }">
             <input
-              v-model="form.resume_url"
-              type="url"
-              placeholder="https://"
+              ref="resumeInput"
+              type="file"
+              name="resume"
+              class="file-input"
+              accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              @change="onResumeChange"
             />
-            <span v-if="fieldError('resume_url')" class="field__err">{{ fieldError('resume_url') }}</span>
-          </label>
+            <div class="file-control">
+              <label for="" class="file-control__btn" @click.prevent="resumeInput?.click()">
+                {{ resumeFile ? 'Replace file' : 'Choose file' }}
+              </label>
+              <span v-if="resumeFile" class="file-control__name">
+                {{ resumeFile.name }}
+                <span class="file-control__size">({{ formatBytes(resumeFile.size) }})</span>
+              </span>
+              <span v-else class="file-control__name file-control__name--empty">No file selected.</span>
+              <button
+                v-if="resumeFile"
+                type="button"
+                class="file-control__clear"
+                @click="clearResume"
+              >
+                Remove
+              </button>
+            </div>
+            <span v-if="fieldError('resume')" class="field__err">{{ fieldError('resume') }}</span>
+          </div>
         </div>
 
         <div v-if="generalError" class="apply__general-err" role="alert">{{ generalError }}</div>
@@ -493,6 +582,22 @@ function applyAgain() {
   font-family: inherit;
 }
 
+.field select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: 42px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%232a3a2d' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 14px;
+  cursor: pointer;
+}
+
+.field select::-ms-expand {
+  display: none;
+}
+
 .field textarea {
   resize: vertical;
   min-height: 120px;
@@ -512,6 +617,105 @@ function applyAgain() {
 .field--err textarea {
   border-color: #c2553e;
   background: #fff8f6;
+}
+
+.apply__track-essay-locked {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 32px 24px;
+  border: 1.5px dashed rgba(15, 27, 18, 0.18);
+  border-radius: var(--radius-md);
+  background: var(--paper-soft);
+  color: var(--beacon-ink-muted);
+  font-size: 14px;
+  line-height: 1.5;
+  font-style: italic;
+}
+
+.file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.file-control {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  background: #fbfdf7;
+  border: 1.5px solid rgba(15, 27, 18, 0.12);
+  border-radius: var(--radius-md);
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.field--err .file-control {
+  border-color: #c2553e;
+  background: #fff8f6;
+}
+
+.file-control__btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  background: var(--beacon-ink);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+.file-control__btn:hover {
+  background: var(--beacon-green-800);
+  transform: translateY(-1px);
+}
+
+.file-control__name {
+  font-size: 14px;
+  color: var(--beacon-ink);
+  word-break: break-all;
+  flex: 1;
+  min-width: 0;
+}
+
+.file-control__name--empty {
+  color: var(--beacon-ink-muted);
+  font-style: italic;
+}
+
+.file-control__size {
+  color: var(--beacon-ink-muted);
+  font-size: 12.5px;
+  margin-left: 4px;
+}
+
+.file-control__clear {
+  background: none;
+  border: none;
+  color: #b1462f;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: var(--radius-pill);
+  transition: background 0.15s ease;
+}
+
+.file-control__clear:hover {
+  background: rgba(177, 70, 47, 0.08);
 }
 
 .field__err {

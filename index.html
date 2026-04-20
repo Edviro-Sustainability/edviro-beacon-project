@@ -20,10 +20,16 @@
     <!--
       Hidden static form so Netlify's build-time HTML scanner registers the
       "beacon-application" form. The Vue-rendered form on /apply submits to "/"
-      with these same field names; submissions appear in the Netlify dashboard
-      under Forms.
+      with these same field names (multipart, since it includes a file upload);
+      submissions appear in the Netlify dashboard under Forms.
     -->
-    <form name="beacon-application" netlify netlify-honeypot="bot-field" hidden>
+    <form
+      name="beacon-application"
+      netlify
+      netlify-honeypot="bot-field"
+      enctype="multipart/form-data"
+      hidden
+    >
       <input type="text" name="full_name" />
       <input type="email" name="email" />
       <input type="text" name="school" />
@@ -31,8 +37,8 @@
       <input type="text" name="location" />
       <input type="text" name="track" />
       <textarea name="why_essay"></textarea>
-      <textarea name="change_essay"></textarea>
-      <input type="url" name="resume_url" />
+      <textarea name="track_essay"></textarea>
+      <input type="file" name="resume" />
     </form>
 
     <div id="app"></div>
