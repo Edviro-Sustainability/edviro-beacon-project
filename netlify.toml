@@ -1,0 +1,9 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# SPA fallback so /apply (and any other client-side route) serves index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

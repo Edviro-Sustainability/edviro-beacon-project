@@ -1,2 +1,0 @@
-ADMIN_PASSWORD=change-me-locally
-SESSION_SECRET=any-long-random-string-for-hmac-signing

@@ -2,7 +2,8 @@
 import { computed, reactive, ref } from 'vue'
 import SiteNav from '../components/beacon/SiteNav.vue'
 import SiteFooter from '../components/beacon/SiteFooter.vue'
-import { ApiException, submitApplication, type ApplicationPayload } from '../lib/api'
+
+const FORM_NAME = 'beacon-application'
 
 interface FormState {
   full_name: string
@@ -14,6 +15,7 @@ interface FormState {
   why_essay: string
   change_essay: string
   resume_url: string
+  'bot-field': string
 }
 
 const initialForm = (): FormState => ({
@@ -26,6 +28,7 @@ const initialForm = (): FormState => ({
   why_essay: '',
   change_essay: '',
   resume_url: '',
+  'bot-field': '',
 })
 
 const form = reactive<FormState>(initialForm())
@@ -41,19 +44,13 @@ const changeCount = computed(() => form.change_essay.length)
 const FIELD_MESSAGES: Record<string, string> = {
   required: 'This field is required.',
   invalid_email: 'Please enter a valid email address.',
-  invalid_track: 'Choose a track.',
   must_start_with_http: 'URL must begin with http:// or https://',
 }
 
 function fieldError(name: keyof FormState): string | null {
   const code = fieldErrors[name]
   if (!code) return null
-  if (FIELD_MESSAGES[code]) return FIELD_MESSAGES[code]
-  if (code.startsWith('max_')) {
-    const n = code.split('_')[1]
-    return `Must be ${n} characters or fewer.`
-  }
-  return 'Invalid value.'
+  return FIELD_MESSAGES[code] ?? 'Invalid value.'
 }
 
 async function onSubmit() {
@@ -64,12 +61,16 @@ async function onSubmit() {
   const localErrors: Record<string, string> = {}
   if (!form.full_name.trim()) localErrors.full_name = 'required'
   if (!form.email.trim()) localErrors.email = 'required'
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()))
+    localErrors.email = 'invalid_email'
   if (!form.school.trim()) localErrors.school = 'required'
   if (!form.grade.trim()) localErrors.grade = 'required'
   if (!form.location.trim()) localErrors.location = 'required'
   if (!form.track) localErrors.track = 'required'
   if (!form.why_essay.trim()) localErrors.why_essay = 'required'
   if (!form.change_essay.trim()) localErrors.change_essay = 'required'
+  if (form.resume_url.trim() && !/^https?:\/\//i.test(form.resume_url.trim()))
+    localErrors.resume_url = 'must_start_with_http'
 
   if (Object.keys(localErrors).length > 0) {
     Object.assign(fieldErrors, localErrors)
@@ -77,33 +78,32 @@ async function onSubmit() {
     return
   }
 
-  const payload: ApplicationPayload = {
-    full_name: form.full_name.trim(),
-    email: form.email.trim(),
-    school: form.school.trim(),
-    grade: form.grade.trim(),
-    location: form.location.trim(),
-    track: form.track as 'data' | 'policy',
-    why_essay: form.why_essay.trim(),
-    change_essay: form.change_essay.trim(),
-    resume_url: form.resume_url.trim() || undefined,
-  }
+  const body = new URLSearchParams()
+  body.append('form-name', FORM_NAME)
+  body.append('bot-field', form['bot-field'])
+  body.append('full_name', form.full_name.trim())
+  body.append('email', form.email.trim())
+  body.append('school', form.school.trim())
+  body.append('grade', form.grade.trim())
+  body.append('location', form.location.trim())
+  body.append('track', form.track)
+  body.append('why_essay', form.why_essay.trim())
+  body.append('change_essay', form.change_essay.trim())
+  body.append('resume_url', form.resume_url.trim())
 
   submitting.value = true
   try {
-    await submitApplication(payload)
+    const res = await fetch('/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: body.toString(),
+    })
+    if (!res.ok) throw new Error(`http_${res.status}`)
     submitted.value = true
     Object.assign(form, initialForm())
-  } catch (err) {
-    if (err instanceof ApiException) {
-      if (err.fields) Object.assign(fieldErrors, err.fields)
-      generalError.value =
-        err.message === 'validation_failed'
-          ? 'Please fix the highlighted fields.'
-          : 'Something went wrong submitting your application. Please try again.'
-    } else {
-      generalError.value = 'Network error. Please try again.'
-    }
+  } catch {
+    generalError.value =
+      'Something went wrong submitting your application. Please try again, or email hursh@edviroenergy.com.'
   } finally {
     submitting.value = false
   }
@@ -151,7 +151,20 @@ function applyAgain() {
         </div>
       </section>
 
-      <form v-else class="apply__form" novalidate @submit.prevent="onSubmit">
+      <form
+        v-else
+        class="apply__form"
+        name="beacon-application"
+        method="POST"
+        data-netlify="true"
+        netlify-honeypot="bot-field"
+        novalidate
+        @submit.prevent="onSubmit"
+      >
+        <input type="hidden" name="form-name" value="beacon-application" />
+        <p class="apply__honeypot" aria-hidden="true">
+          <label>Don't fill this out: <input v-model="form['bot-field']" name="bot-field" tabindex="-1" autocomplete="off" /></label>
+        </p>
         <div class="apply__group">
           <h2 class="apply__group-title">About you</h2>
           <div class="apply__row">
@@ -386,6 +399,15 @@ function applyAgain() {
   display: flex;
   flex-direction: column;
   gap: 36px;
+}
+
+.apply__honeypot {
+  position: absolute;
+  left: -10000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
 }
 
 .apply__group {

@@ -38,10 +38,8 @@ __screenshots__/
 # Vite
 *.timestamp-*-*.mjs
 
-# Cloudflare / Wrangler
-.dev.vars
-.wrangler/
-worker-configuration.d.ts
+# Netlify
+.netlify/
 
 # Local Netlify folder
 .netlify

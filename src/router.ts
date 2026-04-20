@@ -14,12 +14,6 @@ const routes: RouteRecordRaw[] = [
     meta: { title: 'Apply | The Beacon Project' },
   },
   {
-    path: '/admin',
-    name: 'admin',
-    component: () => import('./pages/Admin.vue'),
-    meta: { title: 'Admin | The Beacon Project' },
-  },
-  {
     path: '/:pathMatch(.*)*',
     redirect: '/',
   },
