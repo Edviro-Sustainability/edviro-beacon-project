@@ -18,13 +18,13 @@ const facts = [
           A student leadership program for the people who refuse to wait.
         </h2>
         <p class="program__lede">
-          The Beacon Project is a selective student leadership program for environmentally
-          conscious students who want to spearhead sustainable changes and public energy
-          transparency in their schools.
+          A selective student leadership program for high schoolers who want to drive
+          sustainability and energy transparency in their own schools.
         </p>
         <p class="program__body">
-          Fellows work alongside the Edviro team to shape
-          how their districts measure, communicate, and act on energy data, as well as build dashboards that their classmates, parents, and school boards will use for years to come.
+          Fellows work alongside the Edviro team to shape how their districts measure,
+          communicate, and act on energy data. They build dashboards their classmates,
+          parents, and school boards will use for years.
         </p>
 
         <ul class="program__facts">

@@ -2,32 +2,32 @@
 const benefits = [
   {
     title: 'Mentorship from climate-tech & civic leaders',
-    body: 'Direct working relationships with engineers, operators, and policy advocates inside the climate-tech and public-sector world.',
+    body: 'Direct working relationships with engineers, operators, and policy folks in climate-tech and the public sector.',
     icon: 'mentor',
   },
   {
     title: 'Formal recognition & completion certificate',
-    body: 'A signed Beacon Fellow certificate from Edviro Energy that documents the work you shipped \u2014 not just attendance.',
+    body: 'A signed Beacon Fellow certificate from Edviro Energy that documents what you shipped, not just that you showed up.',
     icon: 'cert',
   },
   {
     title: 'A high-impact student cohort',
-    body: 'Access to a national network of fellows working on the same kind of civic infrastructure in their own districts.',
+    body: 'A national network of fellows building the same kind of civic infrastructure in their own districts.',
     icon: 'cohort',
   },
   {
     title: 'Recommendation letters for standout fellows',
-    body: 'Personal letters of recommendation from Edviro leadership for fellows who demonstrate exceptional impact.',
+    body: 'Personal letters from Edviro leadership for fellows who go above and beyond.',
     icon: 'letter',
   },
   {
     title: 'Eligibility for microgrants & stipends',
-    body: 'Funding to remove barriers and reward fellows pursuing ambitious projects in their schools and districts.',
+    body: 'Funding to remove barriers and back fellows pursuing ambitious projects in their schools.',
     icon: 'grant',
   },
   {
     title: 'Priority for future Edviro opportunities',
-    body: 'Internships, advisory roles, and future Edviro programs open first to alumni of the Beacon Fellows Program.',
+    body: 'Internships, advisory roles, and future Edviro programs open first to Beacon alumni.',
     icon: 'future',
   },
 ]

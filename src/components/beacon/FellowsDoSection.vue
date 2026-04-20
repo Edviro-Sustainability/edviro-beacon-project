@@ -2,12 +2,12 @@
 const items = [
   {
     title: 'Learn how district energy systems work',
-    body: 'Get inside the metering, billing, and decision-making structures that govern your school\u2019s emissions footprint.',
+    body: 'Get inside the metering, billing, and decision-making that shapes your school\u2019s emissions.',
     icon: 'school',
   },
   {
     title: 'Contribute to a real public initiative',
-    body: 'Your work ships into the Beacon public energy transparency program \u2014 not a hypothetical case study.',
+    body: 'Your work ships into the Beacon public energy transparency program. Not a case study.',
     icon: 'spark',
   },
   {
@@ -17,7 +17,7 @@ const items = [
   },
   {
     title: 'Shape how data reaches the public',
-    body: 'Help define what district energy dashboards say, who they speak to, and what action they invite.',
+    body: 'Help decide what district energy dashboards say, who they speak to, and what action they invite.',
     icon: 'screen',
   },
 ]

@@ -2,17 +2,17 @@
 const features = [
   {
     title: 'See where your tax dollars go',
-    body: 'Beacon dashboards turn opaque school energy spend into clear, public-facing breakdowns \u2014 so constituents can see exactly how district budgets translate into emissions and savings.',
+    body: 'Clear, public breakdowns of school energy spend, so constituents can see how district budgets translate into emissions and savings.',
     icon: 'taxes',
   },
   {
     title: 'Track every efficiency upgrade',
-    body: 'From HVAC retrofits to solar installs and lighting swaps, Beacon shows the upgrades each school is making to cut waste \u2014 and the measurable impact afterwards.',
+    body: 'HVAC retrofits, solar installs, lighting swaps. Beacon shows the upgrades each school is making, and the measurable impact afterwards.',
     icon: 'upgrade',
   },
   {
     title: 'Compare schools side by side',
-    body: 'Districts and the public can benchmark schools against each other to see who is leading on sustainability \u2014 and where attention and investment are needed next.',
+    body: 'Benchmark schools against each other. See who is leading on sustainability, and where attention is needed next.',
     icon: 'compare',
   },
 ]
@@ -28,9 +28,9 @@ const features = [
           <span class="presented__head-italic">school by school.</span>
         </h2>
         <p class="section-lede">
-          The Beacon Project is the public face of Edviro's work with school districts. It
-          turns district energy data into dashboards that anyone &mdash; students, parents,
-          school boards, taxpayers &mdash; can read, question, and act on.
+          The Beacon Project is the public face of Edviro's work with school districts. We
+          turn district energy data into dashboards that students, parents, school boards,
+          and taxpayers can actually read, question, and act on.
         </p>
       </div>
 
@@ -79,7 +79,7 @@ const features = [
           />
         </svg>
         <p class="presented__quote-text">
-          We understand the power of passionate young people. The Beacon Project is how we plan to give students real responsibility over their school's energy consumption, harnessing data and transparency to advocate for change.
+          Passionate young people change things. The Beacon Project is how we hand them real responsibility over their school's energy use, with the data and transparency to back it up.
         </p>
       </div>
     </div>

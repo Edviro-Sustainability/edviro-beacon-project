@@ -23,8 +23,8 @@ import { RouterLink } from 'vue-router'
         Become a <span class="cta__heading-italic">Beacon Fellow.</span>
       </h2>
       <p class="cta__lede">
-        If you're a high school student who's tired of waiting for adults to act on climate &mdash;
-        this program was built for you. Bring your school with you.
+        Tired of waiting for adults to act on climate? This program was built for you.
+        Bring your school with you.
       </p>
       <div class="cta__actions">
         <RouterLink to="/apply" class="btn-primary cta__btn">

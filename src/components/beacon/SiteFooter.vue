@@ -38,7 +38,7 @@ const year = new Date().getFullYear()
 
     <div class="container footer__bottom">
       <span>&copy; {{ year }} Edviro Energy. All rights reserved.</span>
-      <span class="footer__bottom-italic">The Beacon Project &mdash; cohort 01.</span>
+      <span class="footer__bottom-italic">The Beacon Project. Cohort 01.</span>
     </div>
   </footer>
 </template>

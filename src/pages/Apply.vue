@@ -51,7 +51,7 @@ const TRACK_ESSAY_PROMPTS: Record<Exclude<Track, ''>, {
   data: {
     label: 'Tell us about your CS or data background.',
     placeholder:
-      "Courses, side projects, hackathons, anything you've built with code or data \u2014 even small stuff. If you're brand new to it, say that, and tell us how you'd ramp up.",
+      "Courses, side projects, hackathons, anything you've built with code or data. Small stuff counts. If you're brand new, say so and tell us how you'd ramp up.",
   },
   policy: {
     label: 'What environmental issue are you most fired up about, and why?',
@@ -188,8 +188,8 @@ function applyAgain() {
           Apply for the <span class="apply__title-italic">fellowship.</span>
         </h1>
         <p class="apply__lede">
-          Tell us a little about you and your school. Most fellows finish this in 20&ndash;30
-          minutes. There are no trick questions.
+          Tell us about you and your school. Most fellows finish in 20 to 30 minutes.
+          No trick questions.
         </p>
       </header>
 
@@ -202,8 +202,8 @@ function applyAgain() {
         </div>
         <h2 class="apply__success-title">Application received.</h2>
         <p class="apply__success-text">
-          Thank you. We review applications on a rolling basis and respond by email within
-          two weeks. If you want to add anything later, email us at
+          Thanks. We review applications on a rolling basis and reply within two weeks.
+          If you want to add anything later, email
           <a href="mailto:hursh@edviroenergy.com">hursh@edviroenergy.com</a>.
         </p>
         <div class="apply__success-actions">
@@ -298,8 +298,8 @@ function applyAgain() {
         <div class="apply__group">
           <h2 class="apply__group-title">Track</h2>
           <p class="apply__group-help">
-            Pick the track you want to lead with. You'll touch the other one too &mdash; this
-            just tells us where to slot you on day one.
+            Pick the track you want to lead with. You'll touch the other one too. This just
+            tells us where to slot you on day one.
           </p>
           <div class="apply__tracks" :class="{ 'apply__tracks--err': fieldErrors.track }">
             <label class="track-pick" :class="{ 'track-pick--active': form.track === 'data' }">
@@ -329,7 +329,7 @@ function applyAgain() {
         <div class="apply__group">
           <h2 class="apply__group-title">Short essays</h2>
           <p class="apply__group-help">
-            Roughly 250&ndash;300 words each. Skip the AI-speak; we want to hear you.
+            About 250 to 300 words each. Skip the AI-speak. We want to hear you.
           </p>
 
           <label class="field" :class="{ 'field--err': fieldErrors.why_essay }">
@@ -350,8 +350,7 @@ function applyAgain() {
           </label>
 
           <div v-if="!form.track" class="apply__track-essay-locked">
-            Pick a track above to unlock the second question &mdash; it's tailored to whichever
-            track you choose.
+            Pick a track above to unlock the second question. It's tailored to the track you pick.
           </div>
 
           <label

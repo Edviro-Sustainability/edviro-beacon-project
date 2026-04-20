@@ -5,7 +5,7 @@ const tracks = [
     label: 'Data Track',
     headline: 'Turn raw district energy data into public insight.',
     summary:
-      'Analyze school energy data, develop public-facing insights, and help shape how information is communicated through Beacon dashboards.',
+      'Analyze school energy data and shape how it reaches the public through Beacon dashboards.',
     bullets: [
       'Work with anonymized district energy datasets',
       'Prototype dashboard views with the Edviro engineering team',
@@ -19,7 +19,7 @@ const tracks = [
     label: 'Policy Track',
     headline: 'Build the coalition that gets transparency adopted.',
     summary:
-      'Build stakeholder support, advocate for transparency initiatives, and help drive adoption within schools and districts.',
+      'Build stakeholder support and drive adoption of transparency in schools and districts.',
     bullets: [
       'Map decision-makers across your district and surrounding districts',
       'Draft proposals for school boards and PTAs',
@@ -41,8 +41,8 @@ const tracks = [
           <span class="tracks__head-italic">One mission.</span>
         </h2>
         <p class="section-lede">
-          Every fellow picks a focus area. Both tracks ship into the same public initiative
-          &mdash; you decide whether you want to lead with data or with people.
+          Every fellow picks a focus area. Both tracks ship into the same public initiative.
+          You choose whether to lead with data or with people.
         </p>
       </div>
 
